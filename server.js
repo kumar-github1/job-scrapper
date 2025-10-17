@@ -19,7 +19,30 @@ console.log('📧 Using Resend for email delivery (optimized for Railway)');
 
 // Priority companies - These will be checked first and send immediate alerts
 const PRIORITY_COMPANIES = [
-    'amazon'
+    'amazon', 'microsoft', 'google', 'oracle', 'goldman sachs', 'phonepe', 'uber', 'meta',
+    'walmart', 'adobe', 'atlassian', 'flipkart', 'linkedin', 'makemytrip', 'servicenow',
+    'infosys', 'meesho', 'swiggy', 'zomato', 'blinkit', 'boston consulting group', 'doordash',
+    'hashedin', 'paytm', 'visa', 'apple', 'groww', 'idfc first bank', 'intuit', 'jp morgan',
+    'media.net', 'paypal', 'salesforce', 'zoho', 'acko', 'american express', 'rippling',
+    'cisco', 'expedia', 'flexport', 'godaddy', 'infoedge india ltd', 'morgan stanley',
+    'nutanix', 'samsung', 'slice', 'tcs', 'urbancompany', 'zeta', 'zupee', 'accenture',
+    'adp', 'airbnb', 'akamai', 'angi', 'apna', 'arcesium', 'arista networks', 'ather energy',
+    'augnito', 'autodesk', 'bain & company', 'barclays', 'bharatpe', 'bitgo', 'blackrock',
+    'bloomberg', 'bny', 'bytedance', 'byteridge', 'cadence', 'capgemini', 'cashfree',
+    'cast software', 'celigo', 'ciena', 'cisco meraki', 'citadel securities', 'clearfeed',
+    'cleartax', 'cleartrip', 'clevertap', 'cognitree', 'd e shaw', 'delhivery', 'deliveroo',
+    'deloitte', 'docquity holdings', 'dp world', 'dunzo', 'easemytrip', 'ebay', 'epam systems',
+    'exl', 'ey', 'fabhotels', 'factset research systems', 'fidelity', 'fidelity investments',
+    'freshworks', 'geekyants', 'halodoc', 'hexaview technologies', 'hexaware', 'hubspot',
+    'infibeam avenues', 'informatica', 'jiohotstar', 'jman group', 'josh technology group',
+    'juspay', 'kotak', 'lime', 'livspace', 'm2p fintech', 'maersk', 'mediamp', 'mindtickle',
+    'money forward', 'moodys', 'myntra', 'netapp', 'netflix', 'ninjacart', 'nvidia', 'okta',
+    'omniful', 'pluang', 'policybazaar', 'pop club', 'porter', 'postman', 'practo',
+    'pragmatic play', 'principal global services', 'qualcomm', 'quince', 'rategain',
+    'razorpay', 'rubrik', 'samsara', 'sap', 'sigmoid analytics', 'sbs', 'spotify', 'sprinklr',
+    'stashfin', 'stripe', 'target', 'tata1mg', 'tech mahindra', 'techmojo solutions', 'tekion',
+    'texas instruments', 'truemeds', 'twilio', 'ukg', 'vinove', 'wayfair', 'wells fargo',
+    'wheelseye', 'yext'
 ];
 
 // All companies - Tech companies hiring freshers in India
