@@ -160,15 +160,96 @@ Render/Railway will auto-redeploy!
 
 ## Troubleshooting
 
-**If emails not sending**:
-1. Check Gmail settings: Allow "Less secure app access" or use App Password
-2. Verify `.env` variables are set correctly
+### ❌ **EMAIL TIMEOUT ON RAILWAY/RENDER** (Most Common Issue)
+
+**Problem**: "Error sending email: Connection timeout" or "ETIMEDOUT"
+
+**✅ SOLUTION - Use Gmail App Password**:
+
+1. **Enable 2-Step Verification** (Required first):
+   - Go to: https://myaccount.google.com/security
+   - Turn on "2-Step Verification"
+   - Follow the setup steps
+
+2. **Create App Password**:
+   - Go to: https://myaccount.google.com/apppasswords
+   - Sign in to your Google Account
+   - Select "Mail" and your device type
+   - Click "Generate"
+   - Copy the **16-character password** (e.g., `abcd efgh ijkl mnop`)
+
+3. **Update Railway Environment Variables**:
+   - Go to your Railway project
+   - Click "Variables" tab
+   - Update `APP_PASSWORD` with the 16-character App Password
+   - Remove all spaces from the password
+   - Click "Deploy" to restart with new password
+
+4. **Redeploy**:
+   - Railway will automatically redeploy
+   - Check logs for "✅ Email sent successfully"
+
+**Why this happens**: Gmail blocks SMTP connections from cloud hosting IPs for security. App Passwords bypass this restriction.
+
+---
+
+### 🔧 Other Common Issues
+
+**If emails still not sending**:
+1. Double-check App Password has NO SPACES
+2. Verify `EMAIL` is the same Gmail account you generated the App Password for
+3. Check Railway logs for specific error message
+4. The code now has 3 retry attempts with 60-second timeouts
 
 **If API errors**:
-1. Check Gemini API key is valid
+1. Check Gemini API key is valid at https://aistudio.google.com/apikeys
 2. Monitor rate limits (free tier: 15 requests/minute)
+3. Check if API key has expired or been revoked
 
 **If deployment fails**:
 1. Check logs in Render/Railway dashboard
 2. Ensure `package.json` has all dependencies
-3. Verify Node.js version compatibility
+3. Verify Node.js version compatibility (Node 16+ required)
+4. Make sure all 4 environment variables are set
+
+---
+
+### 📊 **Viewing Logs on Railway**
+
+1. Go to https://railway.app/dashboard
+2. Click on your `job-scraper` project
+3. Click on the service
+4. Click "Deployments" → Latest deployment
+5. Click "View Logs"
+6. Look for:
+   - `✅ Email sent successfully` (working)
+   - `❌ Email attempt failed` (needs fixing)
+
+---
+
+### 🧪 **Test Email Before Deploying**
+
+Run this test locally to verify credentials:
+
+```bash
+node -e "
+const nodemailer = require('nodemailer');
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: 'kumarbackupyt@gmail.com',
+    pass: 'YOUR_16_CHAR_APP_PASSWORD_HERE'
+  }
+});
+transporter.sendMail({
+  from: 'kumarbackupyt@gmail.com',
+  to: 'kumarsssdsk@gmail.com',
+  subject: 'Test from Job Scraper',
+  text: 'If you receive this, email is working!'
+}).then(() => console.log('✅ SUCCESS - Email works!')).catch(e => console.log('❌ FAILED:', e.message));
+"
+```
+
+If test fails locally, App Password is wrong. If test works locally but fails on Railway, redeploy after setting environment variables.

@@ -13,13 +13,21 @@ const CONFIG = {
     jobsDatabase: 'sent_jobs.json'
 };
 
-// Email transporter
+// Email transporter with timeout and connection settings for cloud hosting
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // Use TLS
     auth: {
         user: CONFIG.email,
         pass: CONFIG.appPassword
-    }
+    },
+    tls: {
+        rejectUnauthorized: false
+    },
+    connectionTimeout: 60000, // 60 seconds
+    greetingTimeout: 30000,
+    socketTimeout: 60000
 });
 
 // Priority companies - These will be checked first and send immediate alerts
@@ -349,7 +357,7 @@ function formatEmailHTML(jobs) {
   `;
 }
 
-// Send email
+// Send email with retry logic
 async function sendEmail(jobs, isPriority = false) {
     const prefix = isPriority ? '🔥 PRIORITY ALERT' : '📋 Job Alert';
     const mailOptions = {
@@ -359,11 +367,28 @@ async function sendEmail(jobs, isPriority = false) {
         html: formatEmailHTML(jobs)
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log(`📧 Email sent successfully to ${CONFIG.targetEmail}\n`);
-    } catch (error) {
-        console.log(`❌ Error sending email: ${error.message}\n`);
+    const maxRetries = 3;
+    let retryCount = 0;
+
+    while (retryCount < maxRetries) {
+        try {
+            console.log(`📧 Attempting to send email... (Attempt ${retryCount + 1}/${maxRetries})`);
+            await transporter.sendMail(mailOptions);
+            console.log(`✅ Email sent successfully to ${CONFIG.targetEmail}\n`);
+            return; // Success, exit function
+        } catch (error) {
+            retryCount++;
+            console.log(`❌ Email attempt ${retryCount} failed: ${error.message}`);
+
+            if (retryCount < maxRetries) {
+                const waitTime = retryCount * 5000; // Wait 5s, then 10s, then 15s
+                console.log(`⏳ Waiting ${waitTime/1000}s before retry...\n`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+            } else {
+                console.log(`❌ Failed to send email after ${maxRetries} attempts\n`);
+                console.log(`   Error: ${error.message}\n`);
+            }
+        }
     }
 }
 
