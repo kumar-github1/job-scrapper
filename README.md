@@ -48,10 +48,10 @@ git push -u origin main
 4. **Add Environment Variables**:
    - Click "Environment" tab
    - Add these variables from your `.env` file:
-     - `EMAIL` = kumarbackupyt@gmail.com
-     - `APP_PASSWORD` = rvdaalbgaqdxuuxr
-     - `GEMINI_API_KEY` = AIzaSyAe7B4D7_gNCLj1z6bia2Lo6cJasGf6GFM
-     - `TARGET_EMAIL` = kumarsssdsk@gmail.com
+     - `EMAIL` = youremail1
+     - `APP_PASSWORD` = app-password-for-email1
+     - `GEMINI_API_KEY` = gemini-api-key
+     - `TARGET_EMAIL` = your-primary-email
 
 5. **Deploy**: Click "Create Background Worker"
 
