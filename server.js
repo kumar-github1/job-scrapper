@@ -1,54 +1,21 @@
 require('dotenv').config();
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const axios = require('axios');
 const fs = require('fs');
 
 // Configuration
 const CONFIG = {
     email: process.env.EMAIL,
-    appPassword: process.env.APP_PASSWORD,
     geminiApiKey: process.env.GEMINI_API_KEY, // Get from https://aistudio.google.com/app/apikeys
     targetEmail: process.env.TARGET_EMAIL,
+    resendApiKey: process.env.RESEND_API_KEY,
     checkInterval: 24 * 60 * 60 * 1000,
     jobsDatabase: 'sent_jobs.json'
 };
 
-// Email transporter - Supports both Gmail (local) and Brevo (Railway)
-const getEmailTransporter = () => {
-    // Use Brevo for Railway (more reliable on cloud hosting)
-    if (process.env.EMAIL_SERVICE === 'brevo') {
-        console.log('📧 Using Brevo SMTP (Recommended for Railway)');
-        return nodemailer.createTransport({
-            host: 'smtp-relay.brevo.com',
-            port: 587,
-            secure: false,
-            auth: {
-                user: CONFIG.email,
-                pass: process.env.BREVO_SMTP_KEY || CONFIG.appPassword
-            },
-            connectionTimeout: 60000,
-            greetingTimeout: 30000,
-            socketTimeout: 60000
-        });
-    }
-
-    // Gmail - Try port 465 (SSL) for better Railway compatibility
-    console.log('📧 Using Gmail SMTP with SSL (Port 465 for Railway compatibility)');
-    return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true, // Use SSL instead of TLS
-        auth: {
-            user: CONFIG.email,
-            pass: CONFIG.appPassword
-        },
-        connectionTimeout: 60000, // 60 seconds
-        greetingTimeout: 30000,
-        socketTimeout: 60000
-    });
-};
-
-const transporter = getEmailTransporter();
+// Initialize Resend (works perfectly on Railway!)
+const resend = new Resend(CONFIG.resendApiKey);
+console.log('📧 Using Resend for email delivery (optimized for Railway)');
 
 // Priority companies - These will be checked first and send immediate alerts
 const PRIORITY_COMPANIES = [
@@ -354,24 +321,25 @@ function formatEmailHTML(jobs) {
   `;
 }
 
-// Send email with retry logic
+// Send email with Resend (works perfectly on Railway!)
 async function sendEmail(jobs, isPriority = false) {
     const prefix = isPriority ? '🔥 PRIORITY ALERT' : '📋 Job Alert';
-    const mailOptions = {
-        from: CONFIG.email,
-        to: CONFIG.targetEmail,
-        subject: `[${prefix}] ${jobs.length} New Fresher Software Roles - ${new Date().toLocaleDateString()}`,
-        html: formatEmailHTML(jobs)
-    };
 
     const maxRetries = 3;
     let retryCount = 0;
 
     while (retryCount < maxRetries) {
         try {
-            console.log(`📧 Attempting to send email... (Attempt ${retryCount + 1}/${maxRetries})`);
-            await transporter.sendMail(mailOptions);
-            console.log(`✅ Email sent successfully to ${CONFIG.targetEmail}\n`);
+            console.log(`📧 Attempting to send email via Resend... (Attempt ${retryCount + 1}/${maxRetries})`);
+
+            await resend.emails.send({
+                from: 'Job Scraper <onboarding@resend.dev>',
+                to: CONFIG.targetEmail,
+                subject: `[${prefix}] ${jobs.length} New Fresher Software Roles - ${new Date().toLocaleDateString()}`,
+                html: formatEmailHTML(jobs)
+            });
+
+            console.log(`✅ Email sent successfully to ${CONFIG.targetEmail} via Resend\n`);
             return; // Success, exit function
         } catch (error) {
             retryCount++;
@@ -406,8 +374,9 @@ async function main() {
         return;
     }
 
-    if (!CONFIG.email || !CONFIG.appPassword) {
-        console.log('❌ ERROR: Please set EMAIL and APP_PASSWORD in .env file\n');
+    if (!CONFIG.resendApiKey) {
+        console.log('❌ ERROR: Please set RESEND_API_KEY in .env file\n');
+        console.log('Get your API key from: https://resend.com/api-keys\n');
         return;
     }
 
