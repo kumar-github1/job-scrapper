@@ -13,22 +13,42 @@ const CONFIG = {
     jobsDatabase: 'sent_jobs.json'
 };
 
-// Email transporter with timeout and connection settings for cloud hosting
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Use TLS
-    auth: {
-        user: CONFIG.email,
-        pass: CONFIG.appPassword
-    },
-    tls: {
-        rejectUnauthorized: false
-    },
-    connectionTimeout: 60000, // 60 seconds
-    greetingTimeout: 30000,
-    socketTimeout: 60000
-});
+// Email transporter - Supports both Gmail (local) and Brevo (Railway)
+const getEmailTransporter = () => {
+    // Use Brevo for Railway (more reliable on cloud hosting)
+    if (process.env.EMAIL_SERVICE === 'brevo') {
+        console.log('📧 Using Brevo SMTP (Recommended for Railway)');
+        return nodemailer.createTransport({
+            host: 'smtp-relay.brevo.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: CONFIG.email,
+                pass: process.env.BREVO_SMTP_KEY || CONFIG.appPassword
+            },
+            connectionTimeout: 60000,
+            greetingTimeout: 30000,
+            socketTimeout: 60000
+        });
+    }
+
+    // Gmail - Try port 465 (SSL) for better Railway compatibility
+    console.log('📧 Using Gmail SMTP with SSL (Port 465 for Railway compatibility)');
+    return nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // Use SSL instead of TLS
+        auth: {
+            user: CONFIG.email,
+            pass: CONFIG.appPassword
+        },
+        connectionTimeout: 60000, // 60 seconds
+        greetingTimeout: 30000,
+        socketTimeout: 60000
+    });
+};
+
+const transporter = getEmailTransporter();
 
 // Priority companies - These will be checked first and send immediate alerts
 const PRIORITY_COMPANIES = [
