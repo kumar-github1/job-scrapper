@@ -180,7 +180,7 @@ If no jobs found for a company, still include it with empty jobs array.
 Return at least 2-3 jobs per company if available.`;
 
         const response = await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CONFIG.geminiApiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${CONFIG.geminiApiKey}`,
             {
                 contents: [
                     {
